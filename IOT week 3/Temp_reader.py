@@ -5,8 +5,8 @@ from machine import Pin, reset
 WIFI_SSID     = "Robotic WIFI"
 WIFI_PASSWORD = "rbtWIFI@2025"
 
-BOT_TOKEN     = "7591180638:AAF7Kol0RyDsgbh3airP0NA7dEtF0i-FlGE"
-ALLOWED_CHAT_IDS = {-4936918510}  
+BOT_TOKEN     = " "
+ALLOWED_CHAT_IDS = { }  
 
 RELAY_PIN = 2
 RELAY_ACTIVE_LOW = False
