@@ -103,7 +103,7 @@ def handle_cmd(chat_id, text):
     global tempAlert
     t = (text or "").strip().lower()
     if t in ("/on", "on"):
-        tempAlert = False;  send_message(chat_id, "Relay Stop sending Messages")
+        tempAlert = False;  send_message(chat_id, "TEMPERATURE ALERT STOPPED")
     elif t in ("/off", "off"):
         relay_off(); send_message(chat_id, "Relay: OFF")
     elif t in ("/status", "status"):
@@ -168,23 +168,15 @@ def main():
             handle_cmd(chat_id, text)
 
         # --- check temperature automatically ---
-        temp, hum = temp_reader()
-        if temp is not None and temp >= 30 and tempAlert == True:
-            now = time.ticks_ms()
-            if time.ticks_diff(now, last_alert) >= ALERT_INTERVAL:
-                for chat_id in ALLOWED_CHAT_IDS:
-                    send_message(chat_id, f"⚠️ Temperature HIGH: {temp}°C ")
-                last_alert = now
-        elif temp < 30:
-            tempAlert = True
-                
-        time.sleep(1)
-       
-        
-
-try:
-    main()
-except Exception as e:
-    print("Fatal error:", e)
-    time.sleep(5)
-    reset()
+            temp, hum = temp_reader()
+            if temp is not None and temp >= 30 and tempAlert == True:
+                now = time.ticks_ms()
+                if time.ticks_diff(now, last_alert) >= ALERT_INTERVAL:
+                    for chat_id in ALLOWED_CHAT_IDS:
+                        send_message(chat_id, f"⚠️ Temperature HIGH: {temp}°C ")
+                    last_alert = now
+            elif temp < 30:
+                send_message(chat_id, f"🌡 Temp is below 30°C, Relay: auto-off, Temp:{temp}°C, 💧 Hum: {hum}%")
+                tempAlert = True
+                    
+            time.sleep(1)
