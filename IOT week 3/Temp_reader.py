@@ -184,8 +184,9 @@ def main():
                     for chat_id in ALLOWED_CHAT_IDS:
                         send_message(chat_id, f"⚠️ Temperature HIGH: {temp}°C ")
                     last_alert = now
-            elif tempAlert == False and temp < 30:
-                send_message(chat_id, f"🌡 Temp is below 30°C, Relay: auto-off, Temp:{temp}°C, 💧 Hum: {hum}%")
+            elif temp < 30:
+                if tempAlert == False :
+                    send_message(chat_id, f"🌡 Temp is below 30°C, Relay: auto-off, Temp:{temp}°C, 💧 Hum: {hum}%")
                 tempAlert = True
                     
             time.sleep(1)
@@ -198,4 +199,5 @@ except Exception as e:
     print("Fatal error:", e)
     time.sleep(5)
     reset()
+
 
