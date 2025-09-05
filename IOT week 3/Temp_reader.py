@@ -1,3 +1,4 @@
+Heang Mapanha, [9/5/2025 3:43 PM]
 import network, time, urequests, json, dht, machine
 from machine import Pin, reset
 
@@ -5,15 +6,14 @@ from machine import Pin, reset
 WIFI_SSID     = "Robotic WIFI"
 WIFI_PASSWORD = "rbtWIFI@2025"
 
-BOT_TOKEN     = " "
-ALLOWED_CHAT_IDS = { }  
+BOT_TOKEN     = "7591180638:AAF7Kol0RyDsgbh3airP0NA7dEtF0i-FlGE"
+ALLOWED_CHAT_IDS = {-4936918510}  
 
 RELAY_PIN = 2
 RELAY_ACTIVE_LOW = False
 POLL_TIMEOUT_S = 22
 DEBUG = True
 
-temp_reader = True
 tempAlert = True
 ALERT_INTERVAL = 5000  # milliseconds between temp alerts
 last_alert = 0
@@ -104,17 +104,11 @@ def handle_cmd(chat_id, text):
     global tempAlert
     t = (text or "").strip().lower()
     if t in ("/on", "on"):
-        if temp_reader == True:
-            tempAlert = False;  send_message(chat_id, "TEMPERATURE ALERT STOPPED")
-        else :
-            temp_reader = True; send_message(chat_id, "Sensor is reading temperature...")
-        
+        tempAlert = False;  send_message(chat_id, "Relay Stop sending Messages")
     elif t in ("/off", "off"):
-        temp_reader = False; send_message(chat_id, "Sensor stopped")
-    
+        relay_off(); send_message(chat_id, "Relay: OFF")
     elif t in ("/status", "status"):
-        send_message(chat_id, "Relay is " + ("ON" if temp_reader == True else "OFF"))
-        
+        send_message(chat_id, "Relay is " + ("ON" if relay_is_on() else "OFF"))
     elif t in ("/temp", "temp"):
         temp, hum = temp_reader()
         if temp is not None:
@@ -135,7 +129,8 @@ def main():
     last_id = None
     last_temp_alert = 0  # to avoid spamming alerts
 
-    old = get_updates(timeout=1)
+Heang Mapanha, [9/5/2025 3:43 PM]
+old = get_updates(timeout=1)
     if old:
         last_id = old[-1]["update_id"]
 
@@ -143,7 +138,6 @@ def main():
     global ALLOWED_CHAT_IDS
     global last_alert
     global tempAlert
-    global temp_reader
 
     while True:
         # --- check Wi-Fi ---
@@ -176,20 +170,17 @@ def main():
             handle_cmd(chat_id, text)
 
         # --- check temperature automatically ---
-        if temp_reader == true:
-            temp, hum = temp_reader()
-            if temp is not None and temp >= 30 and tempAlert == True:
-                now = time.ticks_ms()
-                if time.ticks_diff(now, last_alert) >= ALERT_INTERVAL:
-                    for chat_id in ALLOWED_CHAT_IDS:
-                        send_message(chat_id, f"⚠️ Temperature HIGH: {temp}°C ")
-                    last_alert = now
-            elif temp < 30:
-                if tempAlert == False :
-                    send_message(chat_id, f"🌡 Temp is below 30°C, Relay: auto-off, Temp:{temp}°C, 💧 Hum: {hum}%")
-                tempAlert = True
-                    
-            time.sleep(1)
+        temp, hum = temp_reader()
+        if temp is not None and temp >= 30 and tempAlert == True:
+            now = time.ticks_ms()
+            if time.ticks_diff(now, last_alert) >= ALERT_INTERVAL:
+                for chat_id in ALLOWED_CHAT_IDS:
+                    send_message(chat_id, f"⚠️ Temperature HIGH: {temp}°C ")
+                last_alert = now
+        elif temp < 30:
+            tempAlert = True
+                
+        time.sleep(1)
        
         
 
@@ -199,5 +190,3 @@ except Exception as e:
     print("Fatal error:", e)
     time.sleep(5)
     reset()
-
-
