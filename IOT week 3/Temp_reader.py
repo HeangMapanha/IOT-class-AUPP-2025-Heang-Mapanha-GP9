@@ -13,6 +13,7 @@ RELAY_ACTIVE_LOW = False
 POLL_TIMEOUT_S = 22
 DEBUG = True
 
+temp_reader = True
 tempAlert = True
 ALERT_INTERVAL = 5000  # milliseconds between temp alerts
 last_alert = 0
@@ -103,11 +104,17 @@ def handle_cmd(chat_id, text):
     global tempAlert
     t = (text or "").strip().lower()
     if t in ("/on", "on"):
-        tempAlert = False;  send_message(chat_id, "TEMPERATURE ALERT STOPPED")
+        if temp_reader == True:
+            tempAlert = False;  send_message(chat_id, "TEMPERATURE ALERT STOPPED")
+        else :
+            temp_reader = True; send_message(chat_id, "Sensor is reading temperature...")
+        
     elif t in ("/off", "off"):
-        relay_off(); send_message(chat_id, "Relay: OFF")
+        temp_reader = False; send_message(chat_id, "Sensor stopped")
+    
     elif t in ("/status", "status"):
-        send_message(chat_id, "Relay is " + ("ON" if relay_is_on() else "OFF"))
+        send_message(chat_id, "Relay is " + ("ON" if temp_reader == True else "OFF"))
+        
     elif t in ("/temp", "temp"):
         temp, hum = temp_reader()
         if temp is not None:
@@ -136,6 +143,7 @@ def main():
     global ALLOWED_CHAT_IDS
     global last_alert
     global tempAlert
+    global temp_reader
 
     while True:
         # --- check Wi-Fi ---
@@ -168,6 +176,7 @@ def main():
             handle_cmd(chat_id, text)
 
         # --- check temperature automatically ---
+        if temp_reader == true:
             temp, hum = temp_reader()
             if temp is not None and temp >= 30 and tempAlert == True:
                 now = time.ticks_ms()
@@ -175,8 +184,18 @@ def main():
                     for chat_id in ALLOWED_CHAT_IDS:
                         send_message(chat_id, f"⚠️ Temperature HIGH: {temp}°C ")
                     last_alert = now
-            elif temp < 30:
+            elif tempAlert == False and temp < 30:
                 send_message(chat_id, f"🌡 Temp is below 30°C, Relay: auto-off, Temp:{temp}°C, 💧 Hum: {hum}%")
                 tempAlert = True
                     
             time.sleep(1)
+       
+        
+
+try:
+    main()
+except Exception as e:
+    print("Fatal error:", e)
+    time.sleep(5)
+    reset()
+
